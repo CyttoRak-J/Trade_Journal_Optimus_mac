@@ -4,21 +4,65 @@
     <meta charset="utf-8" />
     <title>Trade Journal</title>
     <style>
-      html, body { height: 100%; margin: 0; }
+      html,
       body {
-        display: grid; place-items: center;
-        background: #121216; color: #e4e4e7;
-        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        height: 100%;
+        margin: 0;
       }
-      .box { text-align: center; max-width: 520px; padding: 24px; }
-      .bars { display: flex; gap: 8px; align-items: flex-end; justify-content: center; height: 48px; margin-bottom: 16px; }
-      .bars span { width: 12px; background: #22c55e; border-radius: 2px; animation: pulse 1.2s ease-in-out infinite; }
-      .bars span:nth-child(1) { height: 40%; }
-      .bars span:nth-child(2) { height: 70%; animation-delay: .15s; }
-      .bars span:nth-child(3) { height: 100%; animation-delay: .3s; }
-      @keyframes pulse { 50% { opacity: .35; } }
-      .error { color: #f87171; white-space: pre-wrap; text-align: left; }
-      .error .bars { display: none; }
+      body {
+        display: grid;
+        place-items: center;
+        background: #121216;
+        color: #e4e4e7;
+        font:
+          14px/1.5 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+      }
+      .box {
+        text-align: center;
+        max-width: 520px;
+        padding: 24px;
+      }
+      .bars {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        justify-content: center;
+        height: 48px;
+        margin-bottom: 16px;
+      }
+      .bars span {
+        width: 12px;
+        background: #22c55e;
+        border-radius: 2px;
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+      .bars span:nth-child(1) {
+        height: 40%;
+      }
+      .bars span:nth-child(2) {
+        height: 70%;
+        animation-delay: 0.15s;
+      }
+      .bars span:nth-child(3) {
+        height: 100%;
+        animation-delay: 0.3s;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.35;
+        }
+      }
+      .error {
+        color: #f87171;
+        white-space: pre-wrap;
+        text-align: left;
+      }
+      .error .bars {
+        display: none;
+      }
     </style>
   </head>
   <body>

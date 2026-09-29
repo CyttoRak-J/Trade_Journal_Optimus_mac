@@ -45,7 +45,8 @@ function hoistPnpm(nm) {
     if (!fs.existsSync(inner)) continue;
     for (const name of fs.readdirSync(inner)) {
       if (name.startsWith("@")) {
-        for (const sub of fs.readdirSync(path.join(inner, name))) hoist(path.join(inner, name, sub), `${name}/${sub}`);
+        for (const sub of fs.readdirSync(path.join(inner, name)))
+          hoist(path.join(inner, name, sub), `${name}/${sub}`);
       } else {
         hoist(path.join(inner, name), name);
       }

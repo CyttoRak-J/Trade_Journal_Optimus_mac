@@ -25,7 +25,10 @@ copyTree(path.join(web, "public"), path.join(server, "apps", "web", "public"));
 
 const runtime = path.join(out, "runtime");
 fs.mkdirSync(runtime, { recursive: true });
-fs.copyFileSync(process.execPath, path.join(runtime, process.platform === "win32" ? "node.exe" : "node"));
+fs.copyFileSync(
+  process.execPath,
+  path.join(runtime, process.platform === "win32" ? "node.exe" : "node"),
+);
 
 fs.copyFileSync(path.join(__dirname, "boot.cjs"), path.join(out, "boot.cjs"));
 console.log(`Staged desktop resources in ${out} (Node ${process.version})`);
