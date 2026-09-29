@@ -1,0 +1,15 @@
+{
+  "name": "trade-journal-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tauri desktop shell for Trade Journal",
+  "scripts": {
+    "prepare-resources": "node prepare-resources.cjs",
+    "tauri": "tauri",
+    "build:win": "node prepare-resources.cjs && tauri build --bundles nsis",
+    "build:mac": "node prepare-resources.cjs && tauri build --bundles app,dmg"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

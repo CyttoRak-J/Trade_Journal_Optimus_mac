@@ -1,0 +1,51 @@
+name: Desktop installers
+
+# Builds the Tauri desktop installers: a Windows setup.exe (NSIS) and a
+# macOS .dmg (Apple Silicon). Run it manually from the Actions tab; the
+# installers are attached to the run as downloadable artifacts.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: build:win
+            bundle: desktop/src-tauri/target/release/bundle/nsis/*.exe
+            name: trade-journal-windows
+          - os: macos-latest
+            script: build:mac
+            bundle: desktop/src-tauri/target/release/bundle/dmg/*.dmg
+            name: trade-journal-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      # pnpm version comes from the packageManager field in package.json
+      - uses: pnpm/action-setup@v6
+      # The desktop app bundles this Node binary, so native modules built by
+      # pnpm install (better-sqlite3) match the runtime that ships.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: npm install --no-audit --no-fund
+        working-directory: desktop
+      - run: npm run ${{ matrix.script }}
+        working-directory: desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.bundle }}
+          if-no-files-found: error

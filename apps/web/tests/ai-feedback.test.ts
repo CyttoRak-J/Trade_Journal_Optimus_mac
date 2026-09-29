@@ -1,0 +1,72 @@
+import { describe, expect, it } from "vitest";
+import { aiFeedback } from "../src/lib/ai-feedback";
+
+describe("AI feedback", () => {
+  it("explains empty or invalid scopes without suggesting an AI connection problem", () => {
+    for (const message of [
+      "No trades match the selected accounts and filters",
+      "No closed trades match this day and the selected filters",
+    ])
+      expect(aiFeedback(message)).toEqual({
+        title: "No matching trades",
+        description:
+          "There are no trades to analyze in this selection. Adjust the accounts, dates or other journal filters.",
+        tone: "info",
+      });
+    expect(aiFeedback("A selected account no longer exists. Update your filters.").title).toBe(
+      "Check your journal filters",
+    );
+    expect(aiFeedback("Journal timezone changed. Refresh and try again.").title).toBe(
+      "Refresh your journal",
+    );
+  });
+  it("treats missing setup as guidance with a direct settings destination", () => {
+    expect(
+      aiFeedback(
+        "AI is not configured — add your Anthropic API key in Settings (it stays on your machine).",
+      ),
+    ).toMatchObject({
+      tone: "info",
+      title: "Set up AI to continue",
+      action: { href: "/settings#ai-settings" },
+    });
+  });
+  it("distinguishes credentials, billing and temporary provider failures", () => {
+    expect(aiFeedback("authentication_error: invalid x-api-key").action?.label).toBe(
+      "Review AI settings",
+    );
+    expect(aiFeedback("Your credit balance is too low").title).toBe(
+      "Your AI account needs attention",
+    );
+    expect(aiFeedback("rate_limit_error")).toMatchObject({ tone: "info", retry: true });
+    expect(aiFeedback("overloaded_error").retry).toBe(true);
+  });
+  it("offers data-specific empty-state guidance without an unhelpful retry", () => {
+    expect(aiFeedback("The journal is empty — import trades first").action?.href).toBe("/import");
+    const recap = aiFeedback("No closed trades on this day to recap");
+    expect(recap.title).toBe("No trades to recap yet");
+    expect(recap.retry).toBeUndefined();
+  });
+  it("recognizes OpenAI credentials, quota and model errors without showing key fragments", () => {
+    const notice = aiFeedback("Incorrect API key provided: sk-proj-PRIVATE");
+    expect(notice.action?.label).toBe("Review AI settings");
+    expect(JSON.stringify(notice)).not.toContain("PRIVATE");
+    expect(aiFeedback("insufficient_quota").title).toBe("Your AI account needs attention");
+    expect(aiFeedback("You exceeded your current quota").retry).toBeUndefined();
+    expect(aiFeedback("AI model unavailable").title).toBe("Check your AI model");
+  });
+  it("offers recovery for network and session failures", () => {
+    expect(aiFeedback("Failed to fetch")).toMatchObject({
+      title: "Couldn’t connect to AI",
+      retry: true,
+    });
+    expect(aiFeedback("Unauthorized").action?.href).toBe("/login");
+  });
+  it("never echoes raw provider payloads or credentials into the notice", () => {
+    const raw = 'Provider error: {secret: "sk-ant-PRIVATE", prompt: "PRIVATE JOURNAL"}';
+    const notice = aiFeedback(raw);
+    expect(notice.title).toBe("Couldn’t complete the AI request");
+    expect(JSON.stringify(notice)).not.toContain("PRIVATE");
+    expect(notice.retry).toBe(true);
+  });
+});
