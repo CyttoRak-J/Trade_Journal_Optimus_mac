@@ -1,10 +1,13 @@
 name: Desktop installers
 
 # Builds the Tauri desktop installers: a Windows setup.exe (NSIS) and a
-# macOS .dmg (Apple Silicon). Run it manually from the Actions tab; the
-# installers are attached to the run as downloadable artifacts.
+# macOS .dmg (Apple Silicon). Run it manually from the Actions tab to get
+# the installers as run artifacts, or push a version tag (git tag v0.1.0 &&
+# git push origin v0.1.0) to also publish them as a GitHub Release.
 on:
   workflow_dispatch:
+  push:
+    tags: ["v*"]
 
 permissions:
   contents: read
@@ -49,3 +52,26 @@ jobs:
           name: ${{ matrix.name }}
           path: ${{ matrix.bundle }}
           if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Trade Journal ${{ github.ref_name }}
+          files: installers/*
+          body: |
+            Desktop installers for Trade Journal.
+
+            - **Windows:** download the `x64-setup.exe` and run it. If Windows shows "Windows protected your PC", choose **More info → Run anyway** (the installer is not code-signed).
+            - **macOS (Apple Silicon):** download the `.dmg`, drag **Trade Journal** to Applications, then right-click it and choose **Open** the first time (the app is not notarized).
+
+            Your journal data stays on your computer.
